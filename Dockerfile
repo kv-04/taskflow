@@ -9,7 +9,7 @@ COPY src ./src
 RUN --mount=type=cache,target=/root/.m2 mvn -B -ntp -q package
 
 # ---- runtime --------------------------------------------------------------
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25-jre-alpine
 # Run as an unprivileged user; data lives on a volume it owns.
 RUN addgroup -S -g 10001 app && adduser -S -u 10001 -G app app \
  && mkdir /data && chown app:app /data
