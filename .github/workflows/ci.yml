@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Least privilege: the workflow can read the repo and nothing else.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      # Compiler warnings fail the build here; tests run; JaCoCo enforces the coverage gate.
+      - name: Build, test, coverage gate
+        run: mvn -B -ntp -Dcompiler.failOnWarning=true verify
+
+      - name: Smoke-test the packaged jar
+        shell: bash
+        run: |
+          export TASKFLOW_HOME="$(mktemp -d)"
+          java -jar target/taskflow.jar add "ci smoke test" --due tomorrow
+          java -jar target/taskflow.jar list --json | grep -q '"title" : "ci smoke test"'
+          java -jar target/taskflow.jar --version
+
+      - name: Upload coverage report
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: target/site/jacoco
+
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
