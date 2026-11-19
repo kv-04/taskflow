@@ -156,7 +156,7 @@ titles in logs, non-root container, and CI with dependency review and CodeQL.
 mvn verify           # build + tests + coverage gate + shaded jar
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) , the [Learning Guide](docs/LEARNING_GUIDE.md) and [Project Explained](docs/PROJECT_EXPLAINED.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development instructions.
 
 ## Known limitations / roadmap
 
